@@ -1,19 +1,11 @@
 package com.homework4.workapi.repository;
 
 import com.homework4.workapi.entity.Post;
-import lombok.Getter;
-import org.springframework.stereotype.Repository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.List;
 
-@Getter
-@Repository
-public class PostRepository {
-    private final Map<Long, Post> posts = new LinkedHashMap<>();
-    private Long sequence = 1L;
 
-    public Long nextId(){
-        return sequence++;
-    }
+public interface PostRepository extends JpaRepository<Post,Long> {
+    List<Post> findByUser_Id(Long userId);
 }

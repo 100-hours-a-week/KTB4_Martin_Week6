@@ -1,31 +1,48 @@
 package com.homework4.workapi.entity;
 
+import jakarta.persistence.*;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
+@Entity
+@Table(name = "posts")
 public class Post {
-    private String username;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Long userId;
+
     private int likeCount;
     private String title;
     private String content;
-    private String imageUrl;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
 
-    public Post(Long id, Long userId, int likeCount, String username, String title, String content, String imageUrl, LocalDateTime createTime, LocalDateTime updateTime) {
-        this.id = id;
-        this.username = username;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    @OneToMany(mappedBy = "post", orphanRemoval = true)
+    private List<Attach> attaches = new ArrayList<>();
+
+    @OneToMany(mappedBy = "post", orphanRemoval = true)
+    private List<Comment> comments = new ArrayList<>();
+
+    @OneToMany(mappedBy = "post", orphanRemoval = true)
+    private List<PostLike> postLikes = new ArrayList<>();
+
+    protected Post() {}
+
+    public Post(User user, String title, String content) {
+        this.user = user;
         this.title = title;
         this.content = content;
-        this.imageUrl = imageUrl;
-        this.createTime = createTime;
-        this.userId = userId;
-        this.likeCount = likeCount;
-        this.updateTime = updateTime;
+        this.createTime = LocalDateTime.now();
+        this.likeCount = 0;
+        this.updateTime = LocalDateTime.now();
     }
 
     public void likeIncrease() {
@@ -38,12 +55,18 @@ public class Post {
         }
     }
 
-    public void update(String title, String content, String imageUrl) {
+    public boolean isWritten(Long userId) {
+        return this.user.getId().equals(userId);
+    }
+
+    public void update(String title, String content) {
         this.updateTime = LocalDateTime.now();
-        this.title = title;
-        this.content = content;
-        this.imageUrl = imageUrl;
+        if (title != null) {
+            this.title = title;
+        }
+        if (content != null) {
+            this.content = content;
+        }
     }
 }
-
 

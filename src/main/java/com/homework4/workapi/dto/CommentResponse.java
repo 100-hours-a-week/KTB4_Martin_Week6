@@ -15,9 +15,9 @@ public class CommentResponse {
 
     public CommentResponse(Comment comment) {
         this.id = comment.getId();
-        this.postId = comment.getPostId();
-        this.userId = comment.getUserId();
-        this.username = comment.getUsername();
+        this.postId = comment.getPost().getId();
+        this.userId = comment.getUser().getId();
+        this.username = comment.getUser().getUsername();
         this.content = comment.getContent();
         this.createTime = comment.getCreateTime();
         this.updateTime = comment.getUpdateTime();

@@ -1,19 +1,10 @@
 package com.homework4.workapi.repository;
 
 import com.homework4.workapi.entity.User;
-import lombok.Getter;
-import org.springframework.stereotype.Repository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.Optional;
 
-@Getter
-@Repository
-public class UserRepository {
-    private final Map<Long, User> users = new LinkedHashMap<>();
-    private Long sequence = 1L;
-
-    public Long nextId(){
-        return sequence++;
-    }
+public interface UserRepository  extends JpaRepository<User, Long> {
+    Optional<User> findByEmail(String email);
 }

@@ -1,8 +1,10 @@
 package com.homework4.workapi.controller;
 
-import com.homework4.workapi.Service.CommentService;
 import com.homework4.workapi.dto.CommentRequest;
 import com.homework4.workapi.dto.CommentResponse;
+import com.homework4.workapi.dto.CommonResponse;
+import com.homework4.workapi.service.CommentService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,12 +17,17 @@ public class CommentController {
     private CommentService commentService;
 
     @PostMapping
-    public CommentResponse addComment(
+    public CommonResponse<CommentResponse> addComment(
             @PathVariable Long postId,
             @RequestParam Long userId,
-            @RequestBody CommentRequest commentRequest
+            @Valid @RequestBody CommentRequest commentRequest
     ) {
-        return commentService.addComment(commentRequest, postId, userId);
+        CommentResponse commentResponse = commentService.addComment(commentRequest, postId, userId);
+
+        if(commentResponse == null) {
+            return new CommonResponse<>("존재하지 않은 사용자 또는 게시글 입니다.", null);
+        }
+        return new CommonResponse<>("댓글이 작성되었습니다.", commentResponse);
     }
 
     @GetMapping
@@ -33,7 +40,7 @@ public class CommentController {
             @PathVariable Long postId,
             @PathVariable Long commentId,
             @RequestParam Long userId,
-            @RequestBody CommentRequest commentRequest
+            @Valid @RequestBody CommentRequest commentRequest
     ) {
         return commentService.updateComment(commentId, commentRequest, postId, userId);
     }
@@ -44,6 +51,6 @@ public class CommentController {
             @PathVariable Long commentId,
             @RequestParam Long userId
     ) {
-        commentService.deleteComment(commentId, userId);
+        commentService.deleteComment(postId, commentId, userId);
     }
 }
