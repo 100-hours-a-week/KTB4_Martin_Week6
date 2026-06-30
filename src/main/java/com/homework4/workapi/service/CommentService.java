@@ -6,7 +6,7 @@ import com.homework4.workapi.entity.Comment;
 import com.homework4.workapi.entity.Post;
 import com.homework4.workapi.entity.User;
 import com.homework4.workapi.repository.CommentRepository;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@Transactional(readOnly = true)
 public class CommentService {
     @Autowired
     private CommentRepository commentRepository;
@@ -36,7 +37,6 @@ public class CommentService {
         return new CommentResponse(savedComment);
     }
 
-    @Transactional
     public List<CommentResponse> getComments(Long postId) {
         postService.findPostById(postId);
 
@@ -73,8 +73,7 @@ public class CommentService {
         }
 
         comment.updateComment(commentRequest.getContent());
-        Comment savedComment = commentRepository.save(comment);
-        return new  CommentResponse(savedComment);
+        return new  CommentResponse(comment);
     }
 
     public Comment findCommentById(Long commentId) {

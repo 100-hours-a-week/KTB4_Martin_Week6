@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@CrossOrigin(origins = {"http://127.0.0.1:5500", "http://localhost:5500"})
 public class AttachController {
     @Autowired
     private AttachService attachService;
@@ -24,11 +25,11 @@ public class AttachController {
     }
 
     @GetMapping("/posts/{postId}/attachments")
-    public List<AttachResponse> getAttaches(
+    public CommonResponse<List<AttachResponse>> getAttaches(
             @PathVariable Long postId
     ) {
         List<AttachResponse> attaches = attachService.getAttaches(postId);
-        return attaches;
+        return new CommonResponse<>(null, attaches);
     }
 
     @DeleteMapping("/attachments/{attachId}")

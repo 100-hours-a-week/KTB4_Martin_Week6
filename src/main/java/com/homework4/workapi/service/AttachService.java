@@ -5,7 +5,7 @@ import com.homework4.workapi.dto.AttachResponse;
 import com.homework4.workapi.entity.Attach;
 import com.homework4.workapi.entity.Post;
 import com.homework4.workapi.repository.AttachRepository;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@Transactional(readOnly = true)
 public class AttachService {
     @Autowired
     private AttachRepository attachRepository;
@@ -37,7 +38,6 @@ public class AttachService {
         return new AttachResponse(savedAttach);
     }
 
-    @Transactional
     public List<AttachResponse> getAttaches(Long postId) {
         postService.findPostById(postId);
 

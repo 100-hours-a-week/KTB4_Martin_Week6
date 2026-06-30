@@ -12,6 +12,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/posts/{postId}/comments")
+@CrossOrigin(origins = {"http://127.0.0.1:5500", "http://localhost:5500"})
 public class CommentController {
     @Autowired
     private CommentService commentService;
@@ -31,26 +32,29 @@ public class CommentController {
     }
 
     @GetMapping
-    public List<CommentResponse> getComments(@PathVariable Long postId) {
-        return commentService.getComments(postId);
+    public CommonResponse<List<CommentResponse>> getComments(@PathVariable Long postId) {
+        List<CommentResponse> comments = commentService.getComments(postId);
+        return new CommonResponse<>(null,comments);
     }
 
     @PutMapping("/{commentId}")
-    public CommentResponse updateComment(
+    public CommonResponse<CommentResponse> updateComment(
             @PathVariable Long postId,
             @PathVariable Long commentId,
             @RequestParam Long userId,
             @Valid @RequestBody CommentRequest commentRequest
     ) {
-        return commentService.updateComment(commentId, commentRequest, postId, userId);
+        CommentResponse commentResponse = commentService.updateComment(commentId, commentRequest, postId, userId);
+        return new CommonResponse<>("댓글을 수정 했습니다.",commentResponse);
     }
 
     @DeleteMapping("/{commentId}")
-    public void deleteComment(
+    public CommonResponse<Void> deleteComment(
             @PathVariable Long postId,
             @PathVariable Long commentId,
             @RequestParam Long userId
     ) {
         commentService.deleteComment(postId, commentId, userId);
+        return new CommonResponse<>("댓글을 삭제 했습니다.", null);
     }
 }

@@ -13,6 +13,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/posts")
+@CrossOrigin(origins = {"http://127.0.0.1:5500", "http://localhost:5500"})
 public class PostController {
     @Autowired
     private PostService postService;
@@ -32,10 +33,12 @@ public class PostController {
     }
 
     @GetMapping("/{postId}")
-    public PostResponse getPost(@PathVariable Long postId) {
-        return postService.getPost(postId);
+    public PostResponse getPost(
+            @PathVariable Long postId,
+            @RequestParam Long userId
+    ) {
+        return postService.getPost(postId, userId);
     }
-
     @PatchMapping("/{postId}")
     public CommonResponse<PostResponse> updatePost(@PathVariable Long postId, @RequestParam Long userId, @RequestBody UpdatePostRequest postRequest) {
         PostResponse postResponse = postService.updatePost(postId, userId, postRequest);
@@ -49,12 +52,14 @@ public class PostController {
     }
 
     @PostMapping("/{postId}/like")
-    public PostResponse likePost(@PathVariable Long postId, @RequestParam Long userId) {
-        return postService.likePost(postId, userId);
+    public CommonResponse<PostResponse> likePost(@PathVariable Long postId, @RequestParam Long userId) {
+        PostResponse postResponse = postService.likePost(postId, userId);
+        return new CommonResponse<>("좋아요를 눌렀습니다.", postResponse);
     }
 
     @PostMapping("/{postId}/unlike")
-    public PostResponse unlikePost(@PathVariable Long postId, @RequestParam Long userId) {
-        return postService.unlikePost(postId, userId);
+    public CommonResponse<PostResponse> unlikePost(@PathVariable Long postId, @RequestParam Long userId) {
+        PostResponse postResponse = postService.unlikePost(postId, userId);
+        return new CommonResponse<>("좋아요를 취소하였습니다.", postResponse);
     }
 }

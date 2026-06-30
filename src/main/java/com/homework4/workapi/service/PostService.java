@@ -6,18 +6,20 @@ import com.homework4.workapi.dto.UpdatePostRequest;
 import com.homework4.workapi.entity.Post;
 import com.homework4.workapi.entity.PostLike;
 import com.homework4.workapi.entity.User;
+import com.homework4.workapi.repository.CommentRepository;
 import com.homework4.workapi.repository.PostLikeRepository;
 import com.homework4.workapi.repository.PostRepository;
-import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@Transactional(readOnly = true)
 public class PostService {
     @Autowired
     private PostRepository postRepository;
@@ -25,27 +27,39 @@ public class PostService {
     private UserService userService;
     @Autowired
     private PostLikeRepository postLikeRepository;
+    @Autowired
+    private CommentRepository commentRepository;
 
     @Transactional
     public PostResponse addPost(Long userId, PostRequest postRequest) {
         User user = userService.findUserById(userId);
         Post post = new Post(user, postRequest.getTitle(), postRequest.getContent());
         Post savedPost = postRepository.save(post);
-        return new PostResponse(savedPost);
+        return new PostResponse(savedPost, 0, false);
     }
 
-    @Transactional
     public List<PostResponse> getPosts() {
-        return postRepository.findAll().stream()
-                .map(PostResponse::new)
+        List<Post> posts = postRepository.findAll();
+
+        return posts.stream()
+                .map(post -> {
+                    int commentCount = commentRepository.countByPost_Id(post.getId());
+                    return new PostResponse(post, commentCount, false);
+                })
                 .toList();
     }
 
     @Transactional
-    public PostResponse getPost(Long postId) {
+    public PostResponse getPost(Long postId, Long userId) {
         Post post = findPostById(postId);
 
-        return new PostResponse(post);
+        int commentCount = commentRepository.countByPost_Id(postId);
+
+        boolean liked = postLikeRepository
+                .findByPost_IdAndUser_Id(postId, userId)
+                .isPresent();
+
+        return new PostResponse(post, commentCount, liked);
     }
 
     @Transactional
@@ -55,7 +69,8 @@ public class PostService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "게시글 작성자만 삭제 할 수 있습니다.");
         }
         postRepository.delete(post);
-        return new PostResponse(post);
+
+        return new PostResponse(post, 0, false);
     }
 
     @Transactional
@@ -65,8 +80,8 @@ public class PostService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "게시글 작성자만 수정 가능합니다.");
         }
         post.update(postRequest.getTitle(), postRequest.getContent());
-        Post savedPost = postRepository.save(post);
-        return new PostResponse(savedPost);
+        int commentCount = commentRepository.countByPost_Id(postId);
+        return new PostResponse(post, commentCount, false);
     }
 
     @Transactional
@@ -81,8 +96,8 @@ public class PostService {
             postLikeRepository.save(postLike);
             post.likeIncrease();
         }
-
-        return new PostResponse(post);
+        int commentCount = commentRepository.countByPost_Id(postId);
+        return new PostResponse(post, commentCount, true);
     }
 
     @Transactional
@@ -98,8 +113,8 @@ public class PostService {
             postLikeRepository.delete(postLike);
             post.likeDecrease();
         }
-
-        return new PostResponse(post);
+        int commentCount = commentRepository.countByPost_Id(postId);
+        return new PostResponse(post, commentCount, false);
     }
 
     public Post findPostById(Long postId) {
